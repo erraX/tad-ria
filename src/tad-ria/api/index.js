@@ -59,10 +59,12 @@ export default class Api {
      *
      * @param {Object} configs 配置
      * @param {Object} hooks 钩子函数
+     * @param {Vue.Store} store Vuex store
      */
-    init(configs, hooks) {
+    init(configs, hooks, store) {
         this.applyHooks(hooks);
         this.axios = axios.create(configs);
+        this.store = store;
 
         this.callHook(Api.HOOKS.AFTER_CREATE_AXIOS, this.axios);
 
@@ -113,7 +115,7 @@ export default class Api {
             );
         }
 
-        return [method, url];
+        return [method.toUpperCase(), url];
     }
 
     /**
@@ -177,6 +179,7 @@ export default class Api {
      * @return {Promise<Object>}
      */
     onRequestFailure(result = {}) {
+        console.log('args', arguments);
         let error;
         if (result.response) {
             let status = result.response.status;
@@ -234,12 +237,43 @@ export default class Api {
         // 'GET|/user/get'
         let [method, url] = this.destructDeclaration(declaration);
 
-        let apiFn = async (data, configs = {}) => await this.axios({
-            method,
-            url,
-            data,
-            ...configs
-        });
+        let apiFn = async (data, configs = {}) => {
+            let delayTimer;
+            const showLoading = configs.loading;
+            if (showLoading !== false) {
+                // 对于 get 请求，如果请求时间很短（300ms 内），
+                // 就不要显示 loading 了。
+                if (method === 'GET') {
+                    delayTimer = setTimeout(() => this.store.commit('startLoading'), 300);
+                }
+                else {
+                    // 对于 post （和其他）请求，不要延迟显示 loading 了，
+                    // 不然会造成诸如“快速点击两次提交按钮”的问题。
+                    this.store.commit('startLoading');
+                }
+            }
+
+            let result;
+            try {
+                result = await this.axios({
+                    method,
+                    url,
+                    data,
+                    ...configs
+                });
+            }
+            catch (ex) {
+                throw ex;
+            }
+            finally {
+                if (showLoading !== false) {
+                    clearTimeout(delayTimer);
+                    delayTimer = null;
+                    this.store.commit('endLoading');
+                }
+            }
+            return result;
+        };
         apiFn = this.callHook(Api.HOOKS.AFTER_CREATE_API, apiFn) || apiFn;
         return apiFn;
     }

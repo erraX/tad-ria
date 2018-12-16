@@ -13,7 +13,6 @@ import Router from './router';
 import Store from './store';
 import Constants from './Constants';
 import Api from './api';
-import apiLoadingHooks from './hooks/apiLoadingHooks';
 
 /**
  * Ria Class
@@ -190,8 +189,7 @@ export default class TadRia {
      * 初始化API
      */
     initApi() {
-        const api = new this.Api().init(this.apiConfigs, this.hooks.api);
-        api.applyHooks(apiLoadingHooks);
+        const api = new this.Api().init(this.apiConfigs, this.hooks.api, this.store.getStore());
         each(this.api, (val, key) => this.api[key] = api.create(key, val));
     }
 

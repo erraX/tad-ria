@@ -1,36 +1,52 @@
 import {assign} from 'lodash';
 import Vue from 'vue'
 import Vuex from 'vuex'
-import pathify from 'vuex-pathify'
 
 Vue.use(Vuex);
 
 export default class Store {
 
-  static mergeVuexStoreOptions(to, from) {
-    if (to.plugins) {
-      [].push.apply(to.plugins, from.plugins || []);
+    storeProps = {
+        state: {
+            loadingCount: 0
+        },
+        mutations: {
+            startLoading(state) {
+                state.loadingCount++;
+            },
+            endLoading(state) {
+                const loadingCount = state.loadingCount;
+                state.loadingCount = loadingCount <= 0 ? 0 : loadingCount - 1;
+            }
+        },
+        getters: {
+            isLoading({loadingCount}) {
+                return loadingCount > 0;
+            }
+        }
+    };
+
+    static mergeVuexStoreOptions(to, from) {
+        if (to.plugins) {
+            [].push.apply(to.plugins, from.plugins || []);
+        }
+
+        assign(to.state, from.state);
+        assign(to.mutation, from.mutation);
+        assign(to.actions, from.actions);
+        assign(to.getters, from.getters);
     }
 
-    assign(to.state, from.state);
-    assign(to.mutation, from.mutation);
-    assign(to.actions, from.actions);
-    assign(to.getters, from.getters);
-  }
+    vuexStore;
 
-  vuexStore;
+    getStore() {
+        return this.vuexStore;
+    }
 
-  getStore() {
-    return this.vuexStore;
-  }
-
-  init(state) {
-    const options = Store.mergeVuexStoreOptions(
-      {plugins: [pathify.plugin]},
-      state
-    );
-
-    this.vuexStore = new Vuex.Store(options);
-  }
+    init(state) {
+        this.vuexStore = new Vuex.Store({
+            ...this.storeProps,
+            ...state
+        });
+    }
 }
-
