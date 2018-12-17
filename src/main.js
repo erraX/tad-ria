@@ -63,6 +63,19 @@ class MyRia extends TadRia {
 const ria = new MyRia().init();
 window.ria = ria;
 
-ria.api.getUser({name: 123});
+async function fetch() {
+    let ret;
+    try {
+        ret = await ria.api.getUser({name: 123})
+    }
+    catch (ex) {
+        console.log(ex);
+    }
+    finally {
+        console.log('ret', ret);
+    }
+}
+
+fetch();
 
 export default ria;

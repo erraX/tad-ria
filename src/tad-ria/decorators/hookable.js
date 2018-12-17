@@ -1,6 +1,20 @@
-import {isArray, isFunction, isPlainObject, each} from 'lodash';
+import {
+    isArray,
+    isFunction,
+    isPlainObject,
+    each,
+    includes
+} from 'lodash';
 
-const isNullOrUndef = target => target === null || target === undefined;
+function isNullOrUndef(target) {
+    return target === null || target === undefined;
+}
+
+function couldApplyHook(hookableClass, HOOKS) {
+    return hookableClass
+        && hookableClass[Symbol.for('isHookable')]
+        && includes(HOOKS);
+}
 
 /**
  * Hookable 装饰器
@@ -59,7 +73,11 @@ export default HOOKS => WrappedClass => {
          * @param {Function} handler 回调函数
          */
         applyHook(hookName, handler) {
-            if (!hookName || !handler) {
+            if (
+                !couldApplyHook(this, HOOKS)
+                || !hookName
+                || !handler
+            ) {
                 return;
             }
 

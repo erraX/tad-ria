@@ -31,21 +31,7 @@ function getRequestErrorObj(message) {
 })
 export default class Api {
 
-    /**
-     * Api hooks
-     *
-     * @type {Object}
-     */
-    // static HOOKS = {
-    //     AFTER_CREATE_AXIOS: 'afterCreateAxios',
-    //     AFTER_CREATE_API: 'afterCreateApi',
-    //     BEFORE_REQUEST: 'beforeRequest',
-    //     AFTER_FAILURE: 'afterFailure',
-    //     AFTER_RESPONSE: 'afterResponse',
-    //     AFTER_SUCCESS: 'afterSuccess',
-    //     AFTER_COMPLETE: 'afterComplete'
-    // };
-
+    // 常用服务器返回错误
     static getRequestErrorObj = getRequestErrorObj;
     static NOT_FOUND_ERROR = getRequestErrorObj('服务器接口不存在');
     static SERVER_ERROR = getRequestErrorObj('服务器错误');
